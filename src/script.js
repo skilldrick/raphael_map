@@ -15,13 +15,22 @@ $(document).ready(function () {
       currentPath = newPath(x, y);
     } else if (currentPath.shouldClose(x, y)) {
       currentPath.closePath();
-      shapes.push(currentPath.path);
-      console.log(shapes);
+      newShape(currentPath.path);
       currentPath = null;
     } else {
       currentPath.addPoint(x, y);
     }
   });
+
+  function newShape(shape) {
+    shapes.push(shape);
+    shape.attr('fill', 'white');
+    shape.hover(function () {
+      shape.attr('fill', 'red');
+    }, function () {
+      shape.attr('fill', 'white');
+    });
+  }
 
   Raphael.el.addPart = function (point) {
     if (this.type != 'path') {
