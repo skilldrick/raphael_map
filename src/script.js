@@ -5,30 +5,30 @@ $(document).ready(function () {
   var paper = Raphael('map', width, height);
   var border = paper.rect(0, 0, 400, 400);
   border.attr('stroke', 'black');
-  var currentPath = null;
-  var shapes = [];
+  var currentPolygon = null;
+  var polygons = [];
 
   $('#map').click(function (e) {
     var x = e.offsetX, y = e.offsetY;
 
-    if (!currentPath) {
-      currentPath = newPath(x, y);
-    } else if (currentPath.shouldClose(x, y)) {
-      currentPath.closePath();
-      newShape(currentPath.path);
-      currentPath = null;
+    if (!currentPolygon) {
+      currentPolygon = newPolygon(x, y);
+    } else if (currentPolygon.shouldClose(x, y)) {
+      currentPolygon.closePath();
+      savePolygon(currentPolygon.path);
+      currentPolygon = null;
     } else {
-      currentPath.addPoint(x, y);
+      currentPolygon.addPoint(x, y);
     }
   });
 
-  function newShape(shape) {
-    shapes.push(shape);
-    shape.attr('fill', 'white');
-    shape.hover(function () {
-      shape.attr('fill', 'red');
+  function savePolygon(polygon) {
+    polygons.push(polygon);
+    polygon.attr('fill', 'white');
+    polygon.hover(function () {
+      polygon.attr('fill', 'red');
     }, function () {
-      shape.attr('fill', 'white');
+      polygon.attr('fill', 'white');
     });
   }
 
@@ -42,7 +42,7 @@ $(document).ready(function () {
     return this;
   };
 
-  function newPath(startX, startY) {
+  function newPolygon(startX, startY) {
     var path = paper.path().addPart(['M', startX, startY]);
 
     return {
