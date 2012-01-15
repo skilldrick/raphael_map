@@ -1,16 +1,67 @@
-$(document).ready(function () {
-  var width = 400;
-  var height = 400;
+(function () {
+  var width = 300;
+  var height = 300;
   var closeTolerance = 5;
-  var paper = Raphael('map', width, height);
-  var border = paper.rect(0, 0, 400, 400);
-  border.attr('stroke', 'black');
+  var paper;
   var currentPolygon = null;
   var polygons = [];
 
-  $('#map').click(function (e) {
-    var x = e.offsetX, y = e.offsetY;
+  function init() {
+    paper = Raphael('map', width, height);
+    var border = paper.rect(0, 0, width, height);
+    border.attr('stroke', 'black');
+    mode.set('draw');
 
+    $('#map').click(function (e) {
+      var x = e.offsetX, y = e.offsetY;
+
+      if (mode.is('draw')) {
+        draw(x, y);
+      } else if (mode.is('delete')) {
+        del(x, y);
+      }
+    });
+
+    $('#draw').click(function () {
+      mode.set('draw');
+    });
+
+    $('#delete').click(function () {
+      mode.set('delete');
+    });
+
+    $('#select').click(function () {
+      mode.set('select');
+    });
+  }
+
+  var mode = (function () {
+    var currentMode;
+
+    return {
+      set: function (newMode) {
+        currentMode = newMode;
+        $('button').removeClass('current');
+        $('#' + newMode).addClass('current');
+      },
+      get: function () {
+        return currentMode;
+      },
+      is: function (mode) {
+        return currentMode === mode;
+      }
+    };
+  })();
+
+  function del(x, y) {
+    var el = paper.getElementByPoint(x, y);
+    if (el) {
+      el.unhover(polyOnHover, polyOffHover);
+      el.remove();
+    }
+  }
+
+  function draw(x, y) {
     if (!currentPolygon) {
       currentPolygon = newPolygon(x, y);
     } else if (currentPolygon.shouldClose(x, y)) {
@@ -20,16 +71,19 @@ $(document).ready(function () {
     } else {
       currentPolygon.addPoint(x, y);
     }
-  });
+  }
+
+  function polyOnHover() {
+    this.attr('fill', 'red');
+  }
+  function polyOffHover() {
+    this.attr('fill', 'white');
+  }
 
   function savePolygon(polygon) {
     polygons.push(polygon);
     polygon.attr('fill', 'white');
-    polygon.hover(function () {
-      polygon.attr('fill', 'red');
-    }, function () {
-      polygon.attr('fill', 'white');
-    });
+    polygon.hover(polyOnHover, polyOffHover);
   }
 
   Raphael.el.addPart = function (point) {
@@ -59,5 +113,8 @@ $(document).ready(function () {
       }
     };
   }
-});
 
+  $(document).ready(function () {
+    init();
+  });
+})();
