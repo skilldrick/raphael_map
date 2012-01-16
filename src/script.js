@@ -4,9 +4,10 @@
   var closeTolerance = 5;
   var paper;
   var currentPolygon = null;
-  var polygons = [];
+  var selection = null;
 
   function init() {
+    $('#map').css({width: width, height: height});
     paper = Raphael('map', width, height);
     var border = paper.rect(0, 0, width, height);
     border.attr('stroke', 'black');
@@ -14,11 +15,14 @@
 
     $('#map').click(function (e) {
       var x = e.offsetX, y = e.offsetY;
+      console.log
 
       if (mode.is('draw')) {
         draw(x, y);
       } else if (mode.is('delete')) {
         del(x, y);
+      } else if (mode.is('select')) {
+        select(x, y);
       }
     });
 
@@ -53,6 +57,18 @@
     };
   })();
 
+  function select(x, y) {
+    var el = paper.getElementByPoint(x, y);
+    if (el) {
+      selection && selection.deselect();
+      selection = el;
+      selection.select();
+    } else {
+      selection && selection.deselect();
+      selection = null;
+    }
+  }
+
   function del(x, y) {
     var el = paper.getElementByPoint(x, y);
     if (el) {
@@ -81,10 +97,17 @@
   }
 
   function savePolygon(polygon) {
-    polygons.push(polygon);
     polygon.attr('fill', 'white');
     polygon.hover(polyOnHover, polyOffHover);
   }
+
+  Raphael.el.select = function () {
+    this.attr('stroke', 'green');
+  };
+
+  Raphael.el.deselect = function () {
+    this.attr('stroke', 'black');
+  };
 
   Raphael.el.addPart = function (point) {
     if (this.type != 'path') {
