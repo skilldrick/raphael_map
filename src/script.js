@@ -74,6 +74,7 @@
     if (el) {
       el.unhover(polyOnHover, polyOffHover);
       el.remove();
+      selection = null;
     }
   }
 
@@ -103,10 +104,12 @@
 
   Raphael.el.select = function () {
     this.attr('stroke', 'green');
+    window.current = this;
   };
 
   Raphael.el.deselect = function () {
     this.attr('stroke', 'black');
+    window.current = null;
   };
 
   Raphael.el.addPart = function (point) {
