@@ -14,16 +14,19 @@
     mode.set('draw');
 
     $('#map').click(function (e) {
-      var x = e.offsetX, y = e.offsetY;
-      console.log
+      var point = getPointFromEvent(e);
 
       if (mode.is('draw')) {
-        draw(x, y);
+        draw(point);
       } else if (mode.is('delete')) {
-        del(x, y);
+        del(point);
       } else if (mode.is('select')) {
-        select(x, y);
+        select(point);
       }
+    });
+
+    $('#map').mousemove(function (e) {
+      //console.log(getPointFromEvent(e));
     });
 
     $('#draw').click(function () {
@@ -57,8 +60,15 @@
     };
   })();
 
-  function select(x, y) {
-    var el = paper.getElementByPoint(x, y);
+  function getPointFromEvent(e) {
+    var $el = $(e.currentTarget);
+    var x = e.pageX - $el.offset().left;
+    var y = e.pageY - $el.offset().top;
+    return {x: x, y: y};
+  }
+
+  function select(point) {
+    var el = paper.getElementByPoint(point.x, point.y);
     if (el) {
       selection && selection.deselect();
       selection = el;
@@ -69,8 +79,8 @@
     }
   }
 
-  function del(x, y) {
-    var el = paper.getElementByPoint(x, y);
+  function del(point) {
+    var el = paper.getElementByPoint(point.x, point.y);
     if (el) {
       el.unhover(polyOnHover, polyOffHover);
       el.remove();
@@ -78,15 +88,15 @@
     }
   }
 
-  function draw(x, y) {
+  function draw(point) {
     if (!currentPolygon) {
-      currentPolygon = newPolygon(x, y);
-    } else if (currentPolygon.shouldClose(x, y)) {
+      currentPolygon = newPolygon(point);
+    } else if (currentPolygon.shouldClose(point)) {
       currentPolygon.closePath();
       savePolygon(currentPolygon.path);
       currentPolygon = null;
     } else {
-      currentPolygon.addPoint(x, y);
+      currentPolygon.addPoint(point);
     }
   }
 
@@ -122,20 +132,20 @@
     return this;
   };
 
-  function newPolygon(startX, startY) {
-    var path = paper.path().addPart(['M', startX, startY]);
+  function newPolygon(startPoint) {
+    var path = paper.path().addPart(['M', startPoint.x, startPoint.y]);
 
     return {
       path: path,
-      addPoint: function (x, y) {
-        path.addPart(['L', x, y]);
+      addPoint: function (point) {
+        path.addPart(['L', point.x, point.y]);
       },
       closePath: function () {
         path.addPart(['Z']);
       },
-      shouldClose: function (x, y) {
-        return Math.abs(startX - x) < closeTolerance &&
-          Math.abs(startY - y) < closeTolerance;
+      shouldClose: function (point) {
+        return Math.abs(startPoint.x - point.x) < closeTolerance &&
+          Math.abs(startPoint.y - point.y) < closeTolerance;
       }
     };
   }
